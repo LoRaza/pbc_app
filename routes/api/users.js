@@ -4,6 +4,11 @@ const gravatar = require('gravatar');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const keys = require('../../config/keys');
+const passport = require('passport');
+
+
+// Chargement des validateurs d'entrées
+const valideRegisterInput = require('../../validation/register');
 
 // Chargement du User Model
 const User = require('../../models/User');
@@ -18,10 +23,18 @@ router.get('/test', (req, res) => res.json({msg: "Users Works"}));
 // @dsc     Enregistrement d'un membre
 // @access  Public
 router.post('/register', (req, res) => {
+    const { errors, isValid } = valideRegisterInput(req.body);
+
+    // Check validation
+    if(!isValid) {
+        return res.status(400).json(errors);
+    }
+
     User.findOne({ email: req.body.email })
         .then(user => {
             if(user) {
-                return res.status(400).json({ email: 'L\'email existe déjà' });
+                errors.email = 'L\'email existe déjà'
+                return res.status(400).json(errors);
             } else {
                 // On définit une image d'avatar par défaut lors de la création du profil
                 const avatar = gravatar.url(req.body.email, {
@@ -88,6 +101,19 @@ router.post('/login', (req, res) => {
         });
     });
 });
+
+// @route   GET api/users/current
+// @dsc     Renvoi le membre actuel
+// @access  Private
+router.get('/current', passport.authenticate('jwt', { session: false }),
+    (req, res) => {
+    res.json({
+        id: req.user.id,
+        name: req.user.name,
+        email: req.user.email
+    });
+});
+
 
 
 module.exports = router;
