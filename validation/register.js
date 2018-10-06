@@ -15,27 +15,27 @@ module.exports = function validateRegisterInput(data) {
     }
 
     if(Validator.isEmpty(data.name)) {
-        errors.name = 'Votre nom est requis.';
+        errors.name = 'Nom requis.';
     }
 
     if(Validator.isEmpty(data.email)) {
-        errors.email = 'Votre email est requis.';
+        errors.email = 'Email requis.';
     }
 
     if(!Validator.isEmail(data.email)) {
-        errors.email = 'Votre email est erroné.';
+        errors.email = 'Email erroné.';
     }
 
     if(Validator.isEmpty(data.password)) {
-        errors.password = 'Votre mot de passe est requis.';
+        errors.password = 'Mot de passe requis.';
     }
 
     if(!Validator.isLength(data.password, { min: 6, max: 30 })) {
-        errors.password = 'Votre mot de passe doit contenir au moins 6 caractères.'
+        errors.password = 'Le mot de passe doit contenir au moins 6 caractères.'
     }
 
     if(Validator.isEmpty(data.password2)) {
-        errors.password2 = 'La confirmation de votre mot de passe est requise.';
+        errors.password2 = 'La confirmation du mot de passe est requise.';
     }
 
     if(!Validator.equals(data.password, data.password2)) {

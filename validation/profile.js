@@ -10,11 +10,11 @@ module.exports = function validateProfileInput(data) {
   data.lastname = !isEmpty(data.lastname) ? data.lastname : '';
 
   if (!Validator.isLength(data.handle, { min: 2, max: 40 })) {
-    errors.handle = 'Handle needs to between 2 and 40 characters';
+    errors.handle = 'Votre nom d\'utilisateur doit contenir entre 2 et 40 caractères';
   }
 
   if(Validator.isEmpty(data.handle)) {
-      errors.handle = 'Profile handle is required';
+      errors.handle = 'Nom d\'utilisateur requis';
   }
 
   if(Validator.isEmpty(data.work)) {
@@ -37,6 +37,35 @@ module.exports = function validateProfileInput(data) {
   if(!isEmpty(data.companyMail)) {
     if(!Validator.isEmail(data.companyMail)) {
         errors.companyMail = 'Adresse mail invalide';
+    }
+  }
+  if (!isEmpty(data.youtube)) {
+    if (!Validator.isURL(data.youtube)) {
+      errors.youtube = 'URL invalide';
+    }
+  }
+
+  if (!isEmpty(data.twitter)) {
+    if (!Validator.isURL(data.twitter)) {
+      errors.twitter = 'URL invalide';
+    }
+  }
+
+  if (!isEmpty(data.facebook)) {
+    if (!Validator.isURL(data.facebook)) {
+      errors.facebook = 'URL invalide';
+    }
+  }
+
+  if (!isEmpty(data.linkedin)) {
+    if (!Validator.isURL(data.linkedin)) {
+      errors.linkedin = 'URL invalide';
+    }
+  }
+
+  if (!isEmpty(data.instagram)) {
+    if (!Validator.isURL(data.instagram)) {
+      errors.instagram = 'URL invalide';
     }
   }
 

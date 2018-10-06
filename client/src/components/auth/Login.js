@@ -1,4 +1,9 @@
 import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
+import { loginUser } from '../../actions/authActions'
+import TextFieldGroup from '../common/TextFieldGroup'
+
 
 class Login extends Component {
   state = {
@@ -7,22 +12,55 @@ class Login extends Component {
     errors: {}
   }
 
-  handleChange = (evt) => {
-    // const { name, email, password, password2 } = evt.target;
-        this.setState({ [evt.target.name]: evt.target.value })
-  }
+  // static getDerivedStateFromProps = nextProps => {
+  //   if(nextProps.auth.isAuthenticated) {
+  //     return {
+        
+  //     }
+  //   }
+  
+  //     if(nextProps.errors) {
+  //       return {
+  //         errors: nextProps.errors 
+  //       }
+  //     }
 
-  handleSubmit = (evt) => {
-    evt.preventDefault()
+  //   }
 
-    const newUser = {
-      email: this.state.email,
-      password: this.state.password,
+  componentWillReceiveProps = nextProps => {
+    if(nextProps.auth.isAuthenticated) {
+      this.props.history.push('/dashboard')
     }
 
-    console.log(newUser)
+    if(nextProps.errors) {
+      this.setState({ errors: nextProps.errors })
+    }
+  }
+
+  componentDidMount = () => {
+    if(this.props.auth.isAuthenticated) {
+      this.props.history.push('/dashboard')
+    }
+  }
+
+  handleChange = evt => {
+    this.setState({ [evt.target.name]: evt.target.value })
+  }
+
+  handleSubmit = evt => {
+    evt.preventDefault()
+
+    const userData = {
+      email: this.state.email,
+      password: this.state.password
+    }
+    console.log(userData)
+    this.props.loginUser(userData)
   }
   render() {
+
+    const { errors } = this.state
+
     return (
       <div className="login">
         <div className="container">
@@ -31,26 +69,22 @@ class Login extends Component {
               <h1 className="display-4 text-center">Connexion au PBC</h1>
               <p className="lead text-center">Prends tes palets et viens bagarrer</p>
               <form onSubmit={ this.handleSubmit }>
-                <div className="form-group">
-                  <input
-                    type="email"
-                    className="form-control form-control-lg"
-                    placeholder="Adresse mail"
-                    name="email"
-                    value={ this.state.email }
-                    onChange={ this.handleChange }
-                  />
-                </div>
-                <div className="form-group">
-                  <input
-                    type="password"
-                    className="form-control form-control-lg"
-                    placeholder="Mot de passe"
-                    name="password"
-                    value={ this.state.password }
-                    onChange={ this.handleChange }
-                  />
-                </div>
+                <TextFieldGroup
+                  placeholder="Adresse mail"
+                  name="email"
+                  type="email"
+                  value={this.state.email}
+                  onChange={this.handleChange}
+                  error={errors.email}
+                />
+                <TextFieldGroup
+                  placeholder="Mot de passe"
+                  name="password"
+                  type="password"
+                  value={this.state.password}
+                  onChange={this.handleChange}
+                  error={errors.password}
+                />
                 <input
                   type="submit"
                   className="btn btn-info btn-block mt-4"
@@ -64,4 +98,15 @@ class Login extends Component {
   }
 }
 
-export default Login;
+Login.propTypes = {
+  loginUser: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  errors: PropTypes.object.isRequired
+}
+
+const mapStateToProps = state => ({
+  auth: state.auth,
+  errors: state.errors
+})
+
+export default connect(mapStateToProps, { loginUser })(Login)

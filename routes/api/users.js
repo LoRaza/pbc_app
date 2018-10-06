@@ -9,6 +9,7 @@ const passport = require('passport');
 
 // Chargement des validateurs d'entrées
 const valideRegisterInput = require('../../validation/register');
+const validateLoginInput = require('../../validation/login');
 
 // Chargement du User Model
 const User = require('../../models/User');
@@ -47,6 +48,7 @@ router.post('/register', (req, res) => {
                     name: req.body.name,
                     email: req.body.email,
                     password: req.body.password,
+                    isAdmin: req.body.isAdmin,
                     avatar
                 });
                 
@@ -68,39 +70,49 @@ router.post('/register', (req, res) => {
 // @dsc     Connexion d'un membre / Returning JWT Token
 // @access  Public
 router.post('/login', (req, res) => {
+    const { errors, isValid } = validateLoginInput(req.body);
+  
+    // Check Validation
+    if (!isValid) {
+      return res.status(400).json(errors);
+    }
+  
     const email = req.body.email;
     const password = req.body.password;
-
-    // On trouve le User par son email
-    User.findOne({ email} ).then(user => {
-            // On vérifie s'il le User existe
-            if(!user) {
-                return res.status(404).json({ email: 'Adresse e-mail inconnu' });
+  
+    // Find user by email
+    User.findOne({ email }).then(user => {
+      // Check for user
+      if (!user) {
+        errors.email = 'Utilisateur non trouvé';
+        return res.status(404).json(errors);
+      }
+  
+      // Check Password
+      bcrypt.compare(password, user.password).then(isMatch => {
+        if (isMatch) {
+          // User Matched
+          const payload = { id: user.id, name: user.name, avatar: user.avatar, isAdmin: user.isAdmin }; // Create JWT Payload
+  
+          // Sign Token
+          jwt.sign(
+            payload,
+            keys.secretOrKey,
+            { expiresIn: 3600 },
+            (err, token) => {
+              res.json({
+                success: true,
+                token: 'Bearer ' + token
+              });
             }
-
-            // On vérifie le password
-            bcrypt.compare(password, user.password).then(isMatch => {
-                if(isMatch) {
-                    // Authentification réussie
-                    const payload = { id: user.id, name: user.name, avatar: user.avatar }; // On crée le payload JWT
-
-                    // Sign token
-                    jwt.sign(
-                        payload,
-                        keys.secretOrKey,
-                        { expiresIn: 7200 },
-                        (err, token) => {
-                            res.json({
-                                sucess: true,
-                                token: 'Bearer ' + token
-                            });
-                    });
-                } else {
-                    return res.status(400).json({ password: 'Mot de passe incorrect'});
-                }
-        });
+          );
+        } else {
+          errors.password = 'Mot de passe erroné';
+          return res.status(400).json(errors);
+        }
+      });
     });
-});
+  });
 
 // @route   GET api/users/current
 // @dsc     Renvoi le membre actuel
